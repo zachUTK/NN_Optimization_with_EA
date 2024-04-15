@@ -7,14 +7,13 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
 
-    trainX, trainY = loader.loadData()
+    X, Y = loader.loadData()
 
-    trainX = loader.normalizeData(trainX)
+    print(X)
 
-    
 
-    
-    input_size = 5
+
+    '''input_size = 5
     hidden_size = 100
     output_size = 1
     model = net.NN_Model(input_size, hidden_size, output_size)
@@ -32,13 +31,12 @@ if __name__ == "__main__":
         loss = criterion(predictions, trainY) 
         trainLosses.append(loss.item())
         
-
         loss.backward()
         optimizer.step()
     
 
     plt.plot(trainLosses)
-    plt.show()
+    plt.show()'''
     
   
 

@@ -1,33 +1,53 @@
 import pandas as pd
+import os
 import torch
+import numpy as np
+
+
 
 
 def loadData():
-    data = pd.read_csv("./data/AAPL.csv")
 
-    data = data.drop(data.columns[0], axis=1)
-
-    trainY = data.iloc[:, 3:4]
-    trainX = data.drop(data.columns[3], axis=1)
-
-    trainX = torch.tensor(trainX.values).float()
-    trainY = torch.tensor(trainY.values).float()
-
-
-    return trainX, trainY
-
-def normalizeData(data):
-
-    min_val = torch.min(data)
-    max_val = torch.max(data)
-    data = (data - min_val) / (max_val - min_val)
+    path = "./data/"
+    csvFiles = [file for file in os.listdir(path) if file.endswith('.csv')]
+    csvFiles.sort()
+    data = pd.DataFrame()
 
     
-    mean = torch.mean(data)
-    std = torch.std(data)
-    data = (data - mean) / std
+    for file in csvFiles:
+        pathToFile = os.path.join(path, file)
+        csv = pd.read_csv(pathToFile)
+        data = pd.concat([data, csv])
 
-    return data
+    data.reset_index(drop=True, inplace=True)
+    data = data.drop(data.columns[0], axis=1)
+
+    Y = data.iloc[:, 3:4]
+    X = data.drop(data.columns[3], axis=1)
+    normX = normalizeData(X)
+
+
+
+    
+
+    #X = torch.tensor(X.values).float()
+    #Y = torch.tensor(Y.values).float()
+
+
+    return normX, Y
+
+def normalizeData(x):
+
+    min_val = np.min(x)
+    max_val = np.max(x)
+    norm = (x - min_val) / (max_val - min_val)
+
+    
+    '''mean = torch.mean(x)
+    std = torch.std(x)
+    x = (x - mean) / std'''
+
+    return norm
 
 
 
