@@ -2,39 +2,59 @@ import pandas as pd
 import os
 import torch
 import numpy as np
+import math
 
 
 
 
-def loadData():
+def loadData(split):
 
+    
     path = "./data/"
     csvFiles = [file for file in os.listdir(path) if file.endswith('.csv')]
     csvFiles.sort()
-    data = pd.DataFrame()
+    trainX = pd.DataFrame()
+    testX = pd.DataFrame()
+
+    trainSplit = math.floor(len(csvFiles) * split)
 
     
-    for file in csvFiles:
-        pathToFile = os.path.join(path, file)
-        csv = pd.read_csv(pathToFile)
-        data = pd.concat([data, csv])
+    for i in range(len(csvFiles)):
+        file = csvFiles[i]
 
-    data.reset_index(drop=True, inplace=True)
-    data = data.drop(data.columns[0], axis=1)
+        if(i <= trainSplit-1):
+            pathToFile = os.path.join(path, file)
+            csv = pd.read_csv(pathToFile)
+            trainX = pd.concat([trainX, csv])
+        else:
+            pathToFile = os.path.join(path, file)
+            csv = pd.read_csv(pathToFile)
+            testX = pd.concat([testX, csv])
 
-    Y = data.iloc[:, 3:4]
-    X = data.drop(data.columns[3], axis=1)
-    normX = normalizeData(X)
 
+    trainX.reset_index(drop=True, inplace=True)
+    trainX = trainX.drop(trainX.columns[0], axis=1)
+    testX.reset_index(drop=True, inplace=True)
+    testX = testX.drop(testX.columns[0], axis=1)
 
+    trainY = trainX.iloc[:, 3:4]
+    trainX = trainX.drop(trainX.columns[3], axis=1)
+    normTrainX = normalizeData(trainX)
+
+    testY = testX.iloc[:, 3:4]
+    testX = testX.drop(testX.columns[3], axis=1)
+    normTestX = normalizeData(testX)
+
+    normTrainX = torch.tensor(normTrainX.values).float()
+    normTestX = torch.tensor(normTestX.values).float()
+
+    trainY = torch.tensor(trainY.values).float()
+    testY = torch.tensor(testY.values).float()
 
     
 
-    #X = torch.tensor(X.values).float()
-    #Y = torch.tensor(Y.values).float()
-
-
-    return normX, Y
+    
+    return normTrainX, trainY, normTestX, testY
 
 def normalizeData(x):
 

@@ -7,22 +7,19 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
 
-    X, Y = loader.loadData()
+    trainX, trainY, testX, testY = loader.loadData(0.8)
 
-    print(X)
-
-
-
-    '''input_size = 5
+    
+    input_size = 5
     hidden_size = 100
     output_size = 1
     model = net.NN_Model(input_size, hidden_size, output_size)
 
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
     trainLosses = []
-    epochs = 5000
+    epochs = 10000
 
     for epoch in range(epochs):
         model.train()
@@ -36,7 +33,7 @@ if __name__ == "__main__":
     
 
     plt.plot(trainLosses)
-    plt.show()'''
+    plt.show()
     
   
 
