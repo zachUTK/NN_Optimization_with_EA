@@ -1,73 +1,44 @@
 import pandas as pd
 import os
-import torch
 import numpy as np
 import math
 
+def load_data(split=0.8, data_path="./data/"):
+    csv_files = sorted([f for f in os.listdir(data_path) if f.endswith('.csv')])
+    split_idx = math.floor(len(csv_files) * split)
+
+    # Load and combine training/test files
+    train_files = csv_files[:split_idx]
+    test_files = csv_files[split_idx:]
+
+    train_df = pd.concat([pd.read_csv(os.path.join(data_path, f)) for f in train_files])
+    test_df = pd.concat([pd.read_csv(os.path.join(data_path, f)) for f in test_files])
+
+    train_df.reset_index(drop=True, inplace=True)
+    test_df.reset_index(drop=True, inplace=True)
+
+    # Drop unwanted columns 
+    cols_to_drop = [0, 4]  
+    train_df.drop(train_df.columns[cols_to_drop], axis=1, inplace=True)
+    test_df.drop(test_df.columns[cols_to_drop], axis=1, inplace=True)
+
+    # Extract labels 
+    target_col = 3
+    trainY = train_df.iloc[:, target_col].values
+    testY = test_df.iloc[:, target_col].values
+
+    trainX = train_df.drop(train_df.columns[target_col], axis=1)
+    testX = test_df.drop(test_df.columns[target_col], axis=1)
+
+    # Normalize
+    norm_trainX, mean, std = normalize(trainX)
+    norm_testX = (testX - mean) / (std + 1e-8)
+
+    return norm_trainX.values, trainY, norm_testX.values, testY
 
 
-
-def loadData(split):
-
-    
-    path = "./data/"
-    csvFiles = [file for file in os.listdir(path) if file.endswith('.csv')]
-    csvFiles.sort()
-    trainX = pd.DataFrame()
-    testX = pd.DataFrame()
-
-    trainSplit = math.floor(len(csvFiles) * split)
-
-    
-    for i in range(len(csvFiles)):
-        file = csvFiles[i]
-
-        if(i <= trainSplit-1):
-            pathToFile = os.path.join(path, file)
-            csv = pd.read_csv(pathToFile)
-            trainX = pd.concat([trainX, csv])
-        else:
-            pathToFile = os.path.join(path, file)
-            csv = pd.read_csv(pathToFile)
-            testX = pd.concat([testX, csv])
-
-
-    trainX.reset_index(drop=True, inplace=True)
-    trainX = trainX.drop(trainX.columns[0], axis=1)
-    testX.reset_index(drop=True, inplace=True)
-    testX = testX.drop(testX.columns[0], axis=1)
-
-    trainY = trainX.iloc[:, 3:4]
-    trainX = trainX.drop(trainX.columns[3], axis=1)
-    normTrainX = normalizeData(trainX)
-
-    testY = testX.iloc[:, 3:4]
-    testX = testX.drop(testX.columns[3], axis=1)
-    normTestX = normalizeData(testX)
-
-    normTrainX = torch.tensor(normTrainX.values).float()
-    normTestX = torch.tensor(normTestX.values).float()
-
-    trainY = torch.tensor(trainY.values).float()
-    testY = torch.tensor(testY.values).float()
-
-    
-
-    
-    return normTrainX, trainY, normTestX, testY
-
-def normalizeData(x):
-
-    min_val = np.min(x)
-    max_val = np.max(x)
-    norm = (x - min_val) / (max_val - min_val)
-
-    
-    '''mean = torch.mean(x)
-    std = torch.std(x)
-    x = (x - mean) / std'''
-
-    return norm
-
-
-
+def normalize(df):
+    mean = df.mean()
+    std = df.std()
+    norm_df = (df - mean) / (std + 1e-8)
+    return norm_df, mean, std
